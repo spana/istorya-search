@@ -96,7 +96,11 @@ location_index = {'Europe': {   up: [],
                   'Sombor': {   up: ['Sombor county'],
                                 down: []},
                   'Balkans' : { up: ['Europe'],
-                                down: ['Serbia', 'Montenegro', 'Bulgaria', 'Bosnia']}
+                                down: ['Serbia', 'Montenegro', 'Bulgaria', 'Bosnia']},
+                  'Central Serbia' :{   up:['Serbia'],
+                                        down: ['Kragujevac']},
+                  'Kragujevac' : {  up: ['Central Serbia'],
+                                    down: []}
                   }
 
 #institution_index defines hierarchy of institutional types.
@@ -392,7 +396,7 @@ def search_events(name, institution, location, event, date1_str, date2_str, past
 
     events_found = []
     error_code, res = search_institution(name, institution, location, date1_str, date2_str, past_flag, pt_flag)
-    
+
     if error_code == 0:
         for i in range(len(res)):
             obj = res[i]
@@ -471,11 +475,26 @@ def fill_in():
     add_town_to_index(my_town)
     add_town_to_list(my_town)
 
+    my_town = town('Kragujevac','Serbia')
+    my_town.add_country('Serbia', 2006, 2012)
+    my_town.add_country('Yugoslavia', 1918, 2005)
+    my_town.add_country('Turkey', 1400, 1917)
+    my_town.add_event('founded', 1400)
+    add_town_to_index(my_town)
+    add_town_to_list(my_town)
     
     school = institution('Miroslav Antic', 'elementary school', 'Conoplja')
     school.add_names('Bratstvo-Jedinstvo', 1946, 1992)
     school.add_names('Miroslav Antic', 1992, 2012)
     school.add_event('name change', 1992)
+    school.add_event('founded', 1946)
+    school.add_tags()
+    add_object_to_index(school)
+
+    school = institution('Sveti Sava', 'elementary school', 'Kragujevac')
+    school.add_names('Nikolija Koka Petrovic', 1985, 1989)
+    school.add_names('Sveti Sava', 1989, 2012)
+    school.add_event('name change', 1989)
     school.add_event('founded', 1946)
     school.add_tags()
     add_object_to_index(school)
@@ -497,6 +516,7 @@ def fill_in():
 
 
 fill_in()
+
 
 # --------------------------------------------	Search engine class ----------------------------------------------------------------------------------
 
