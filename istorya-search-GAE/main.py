@@ -22,9 +22,9 @@ class institution:
         self.location = location
         self.locations = []
         self.languages = []
-        self.tags = []
-        self.tags_old = []
-        self.tags_oldt = []
+        self.tags = []      # current tags
+        self.tags_old = []  # tags containing former names and locations
+        self.tags_oldt = [] # tags containing former countries
         self.events = []
 
     def add_names(self, name, date1, date2):
@@ -137,7 +137,7 @@ def union(a, b):
             res.append(e)
     return res
 
-# Defines union of two lists.
+# Defines intersection of two lists.
 
 def intersection(a, b):
     res = []
@@ -169,8 +169,9 @@ def institution_tree(inst_type):
 
 
 # Adds object to an object_index.
-# object_index is a dictionary where keywords are tags from objects. Each value is a list of two elements:
-# list of objects that have given tag in obj.tags and list of objects that have given tag in obj.tags_old.
+# object_index is a dictionary where keywords are tags from objects. Each value is a list of three elements:
+# list of objects that have given tag in obj.tags, list of objects that have given tag in obj.tags_old
+# and list of objects that have given tag in obj.tags_oldt (refering to old territories of countries).
 # Each object is added to the index right after creation or modification and that eliminates need for crawling.
 
 def add_object_to_index(obj):
@@ -191,6 +192,7 @@ def add_object_to_index(obj):
             object_index[tag] = [[],[],[obj]]
         
 
+# Adds town object to town_index. 
 
 def add_town_to_index(my_town):
     for country in my_town.countries:
@@ -207,20 +209,28 @@ def add_town_to_list(my_town):
     town_list[my_town.name] = my_town
     
 
-
+# error codes
 NO_INPUT = 1
 NOT_FOUND = 2
+
+
 TODAY = 2012
 
-
+# error messages
 error_message = {}
 error_message[NO_INPUT] = ['Please enter at least one of these parameters: name, type, location.']
 error_message[NOT_FOUND] = ['No results found.']
 
 
+# Searches institution with given name, type and location in time interval [date1_str, date2_str].
+# past_flag indicates if it should include former names and locations.
+# pt_flag indicates if it should include former countries.
+# If name, institution and location parameters are not defined, it returns error.
+
 def search_institution(name, institution, location, date1_str, date2_str, past_flag, pt_flag):
     res = []
     error_code = 0
+    # one of input parameters: name, institution, location has to be entered!
     if name != '' or institution != '' or location != '':
         if (name != '' and name not in object_index) or (institution != '' and institution not in object_index) or (location != '' and location not in object_index):
             error_code = NOT_FOUND
@@ -254,9 +264,10 @@ def search_institution(name, institution, location, date1_str, date2_str, past_f
         res = error_message[error_code]
         return error_code, res
 
-
-    date1 = -10000
+    # if no date is specified, we use default values
+    date1 = -10000  
     date2 = TODAY
+    
     flag_date_input = True
     if date1_str == '' and date2_str == '':
         flag_date_input = False
@@ -266,7 +277,9 @@ def search_institution(name, institution, location, date1_str, date2_str, past_f
         if date2_str != '':
             date2 = int(date2_str)
 
-    flags = []
+    flags = []  # flags[i] is set to be True if res[i] should be deleted
+
+    # This block checks if all the properties are satisfied. It could be simplified, but not before the deadline. :)
     for i in range(len(res)):
         flags.append(False)
         obj = res[i]
@@ -284,7 +297,9 @@ def search_institution(name, institution, location, date1_str, date2_str, past_f
             if pt_flag and location != '':
                 if not check_territory(obj, location, date1, date2):
                     flags[i] = True
-   
+
+    # Deleting objects that do not satisfy all the properties.
+    # Objects are deleted in reverse order so that indexes of other objects ready for deleting would not change.
     for i in reversed(range(len(res))):
         if flags[i]:
             del(res[i])
@@ -295,6 +310,7 @@ def search_institution(name, institution, location, date1_str, date2_str, past_f
                 
     return error_code, res
 
+# Checks if institution has existed in a given time interval.
 def check_existance(obj, date1, date2):
     ret = False
     inst_date2 = TODAY
@@ -307,7 +323,7 @@ def check_existance(obj, date1, date2):
         ret = True
     return ret
 
-
+# Finds time interval in which institution existed on a given location or former country within given time interval. 
 def find_loc_interval(obj, location, date1, date2):
     loc_flag = False
     inst_date2 = TODAY
@@ -338,14 +354,14 @@ def find_loc_interval(obj, location, date1, date2):
 
     return loc_date1, loc_date2
 
-
+# Checks if object satifies location and time specification from search inputs.
 def check_territory(obj, location, date1, date2):
     d1, d2 = find_loc_interval(obj, location, date1, date2)
     if d1 > d2:
         return False
     return True
 
-
+# Checks if institution had given name in some part of given time interval. 
 def check_names(obj, name, date1, date2):
     ret = False
     for inst_name in obj.names:
@@ -362,6 +378,7 @@ def check_names(obj, name, date1, date2):
 # from a given time interval. If interval is not specified, it returns all events.
 # If event is 'all' it returns all events from given time interval.
 # If name, institution and location parameters are not defined, it returns error.
+# This funcion first selects objects that satisfy input parameters and then checks for their events that fit input parameters.
 
 
 def search_events(name, institution, location, event, date1_str, date2_str, past_flag, pt_flag):
@@ -375,7 +392,7 @@ def search_events(name, institution, location, event, date1_str, date2_str, past
 
     events_found = []
     error_code, res = search_institution(name, institution, location, date1_str, date2_str, past_flag, pt_flag)
-    #print res
+    
     if error_code == 0:
         for i in range(len(res)):
             obj = res[i]
@@ -395,9 +412,7 @@ def search_events(name, institution, location, event, date1_str, date2_str, past
             if int1 <= int2:
                 for ev in obj.events:
                     if (ev[0] == event or event == 'all') and ev[1] >= int1 and ev[1] <= int2:
-
                         events_found.append([ev[1], obj, ev])
-                        
         if events_found == []:
             error_code = NOT_FOUND
             res = error_message[error_code]
@@ -409,10 +424,8 @@ def search_events(name, institution, location, event, date1_str, date2_str, past
 
     return error_code, events_found
                 
-                
 
-            
-    
+# Global search function that calls search_institution or search-event depending on its inputs.    
 
 def search(name, institution, location, event, date1, date2, past_flag, pt_flag):
     print_out = []
@@ -435,6 +448,7 @@ def search(name, institution, location, event, date1, date2, past_flag, pt_flag)
     return print_out        
 
 
+# This function is filling indexes for search.
 
 def fill_in():
 
@@ -480,6 +494,7 @@ def fill_in():
     school.add_event('founded', 1778)
     school.add_tags()
     add_object_to_index(school)
+
 
 fill_in()
 
