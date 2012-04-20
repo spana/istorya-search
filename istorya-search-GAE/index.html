@@ -1,0 +1,151 @@
+﻿<html lang='en'>
+	<head>
+		<meta charset='utf-8'/>
+		<title>Istorya Search</title>
+		<style type='text/css'>					
+			label
+			{
+				border: none;
+				display: block;
+				float: left;
+			}
+			.c_half
+			{
+				float: left;
+				text-align: left;
+				width:50%;
+			}
+			.talign_right
+			{
+				text-align: right;				
+			}
+			.button_search
+			{
+				width: 160px;
+				float: left;
+				margin-left: 200px;
+			}
+			body
+			{
+				font-family: 'Tahoma';
+				font-size: 13px;
+				background: #EEEEEE;
+			}
+			.c_full_row
+			{
+				float: left;
+				width: 100%;
+				text-align: left;
+				padding-top: 5px;
+				padding-bottom: 5px;
+			}
+			.search_form
+			{
+				width: 805px;
+				font-family: 'Tahoma';
+				font-size: 13px;
+			}
+			h1
+			{
+				font-family:'Arial';
+				font-size: 28px;
+				font-weight: bold;
+				text-align: center;
+				color: #3300CC;
+			}
+			#result
+			{
+				margin-left: 160px;
+				width: 805px;
+				float: left;
+				font-size: 14px;
+				font-weight: bold;
+			}
+			#result ul
+			{
+				list-style-type: none;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Istorya Search</h1>
+		<br/>
+		<br/>
+		<form class='search_form' action='/search' method='POST' enctype='multipart/form-data' autocomplete='off'> 
+			<div class='c_full_row'>
+				<div class='c_half'>
+					<label class='c_half talign_right' for='institution_name'>Name:&nbsp;&nbsp;</label>
+					<input class='c_half' type='text' name='institution_name' value='{{institution_name}}'/>
+				</div>
+				<div class='c_half'>
+					{% if checked_1 %}
+						<input type='checkbox' name='search_past' checked='checked'>Search former name or location</input>
+					{% else %}
+					 	<input type='checkbox' name='search_past'>Search former name or location</input>
+					{% endif %}
+				</div>
+			</div>
+			<div class='c_full_row'>
+				<div class='c_half'>
+					<label class='c_half talign_right' for='institution_type'>Type:&nbsp;&nbsp;</label>
+					<input class='c_half' type='text' name='institution_type' value='{{institution_type}}'/>
+				</div>
+			</div>
+			<div class='c_full_row'>
+				<div class='c_half'>
+					<label class='c_half talign_right' for='location'>Location:&nbsp;&nbsp;</label>
+					<input class='c_half' type='text' name='location' value='{{location}}'/>
+				</div>
+				<div class='c_half'>
+					{% if checked_2 %}
+						<input type='checkbox' name='search_past_location' checked='checked'>Search former territory</input>
+					{% else %}
+					 	<input type='checkbox' name='search_past_location'>Search former territory</input>
+					{% endif %}
+				</div>
+			</div>
+			<div class='c_full_row'>
+				<p></p>
+			</div>
+			<div class='c_full_row'>
+				<div class='c_half'>
+					<label class='c_half talign_right' for='event'>Event:&nbsp;&nbsp;</label>
+					<input class='c_half' type='text' name='event' value='{{event}}'/>
+				</div>
+			</div>
+			<div class='c_full_row'>
+				<div class='c_half'>
+					<label class='c_half talign_right' for='begin_year'>Begin year:&nbsp;&nbsp;</label>
+					<input  class='c_half' type='text' name='begin_year' value='{{begin_year}}'/>
+				</div>
+			</div>
+			<div class='c_full_row'>
+				<div class='c_half'>
+					<label class='c_half talign_right' for='end_year'>End year:&nbsp;&nbsp;</label>
+					<input class='c_half' type='text' name='end_year' value='{{end_year}}'/>
+				</div>
+			</div>
+			<div class='c_full_row'>
+				<div class='c_half'>
+					<input type='submit' class='button_search' name='search_type' value='Search!'/>
+				</div>
+			</div>
+		</form>
+		<br/>
+		<br/>
+		<br/>
+		<div id='result'>
+			{% if init %}
+				<ul>
+					<li> {{ results }}</li>
+				</ul>
+			{% else %}
+				<ul>
+					{% for entry in results %}
+						<li>{{ entry }}</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+		</div>
+	</body>
+</html>
